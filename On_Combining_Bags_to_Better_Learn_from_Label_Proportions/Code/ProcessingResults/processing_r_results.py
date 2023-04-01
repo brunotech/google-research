@@ -31,13 +31,12 @@
 # limitations under the License.
 
 """Processing results from R Code."""
+
 import pathlib
 import pandas as pd
 
 path_to_root_results_dir = (pathlib.Path(__file__).parent /
                             "../../Results/").resolve()
-
-r_exp_results_dir = str(path_to_root_results_dir) + "/Raw_Results/"
 
 dataset_name_list = ["Heart", "Ionosphere", "Australian"]
 
@@ -64,14 +63,15 @@ final_columns = [
     "name", "method", "LR", "MM", "LMM(v(G,s))", "AMM(MM)", "AMM(LMM(v(G,s)))"
 ]
 
+r_exp_results_dir = f"{str(path_to_root_results_dir)}/Raw_Results/"
 best_param_df = pd.DataFrame(columns=final_columns)
 
 for dataset_name in dataset_name_list:
 
   dataset_df = pd.DataFrame()
 
-  dataset_outfile = str(
-      path_to_root_results_dir) + "/" + dataset_name + "RexpStats"
+  dataset_outfile = (f"{str(path_to_root_results_dir)}/" + dataset_name +
+                     "RexpStats")
 
   for cluster_bags_method in range(1, 8):
 

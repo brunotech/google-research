@@ -136,21 +136,9 @@ class Koopman(nn.Module):
     self.num_feats = num_feats
 
     # num_poly/num_sins/num_exp = -1 means using default values
-    if num_poly == -1:
-      self.num_poly = 3
-    else:
-      self.num_poly = num_poly
-
-    if num_sins == -1:
-      self.num_sins = input_length // 2 - 1
-    else:
-      self.num_sins = num_sins
-
-    if num_exp == -1:
-      self.num_exp = 1
-    else:
-      self.num_exp = num_exp
-
+    self.num_poly = 3 if num_poly == -1 else num_poly
+    self.num_sins = input_length // 2 - 1 if num_sins == -1 else num_sins
+    self.num_exp = 1 if num_exp == -1 else num_exp
     # we also use interation terms for multivariate time series
     # calculate the number of second-order interaction terms
     if self.num_feats > 1:
@@ -296,7 +284,7 @@ class Koopman(nn.Module):
     # Collect predicted measurements on the lookback window
     inp_embed_preds = []
     forw = embedding[:, :1]
-    for i in range(inps.shape[1] - 1):
+    for _ in range(inps.shape[1] - 1):
       if self.add_global_operator:
         forw = self.global_linear_transform(forw)
       forw = torch.einsum("bnl, blh -> bnh", forw, local_transform)
@@ -323,44 +311,43 @@ class Koopman(nn.Module):
       forward_iters += 1
 
     # Forward predictions
-    for i in range(forward_iters):
+    for _ in range(forward_iters):
       if self.add_global_operator:
         forw = self.global_linear_transform(forw)
-      if self.add_control:
-        forw = torch.einsum("bnl, blh -> bnh", forw,
-                            local_transform + linear_adj)
-      else:
-        forw = torch.einsum("bnl, blh -> bnh", forw, local_transform)
+      forw = (torch.einsum("bnl, blh -> bnh", forw, local_transform +
+                           linear_adj) if self.add_control else torch.einsum(
+                               "bnl, blh -> bnh", forw, local_transform))
       forw_preds.append(forw)
     forw_preds = torch.cat(forw_preds, dim=1)
 
     # Reconstruction
     forw_preds = self.decoder(forw_preds)
-    #####################################################################
-
-    if self.regularize_rank:
-      ##### Regularize the rank of koopman operator ######
-      local_transform = torch.matmul(local_transform, self.dynamics_summary)
-
-      dynamics_cov = torch.matmul(self.dynamics_summary.t() / self.latent_dim,
-                                  self.dynamics_summary / self.latent_dim)
-      spec_norm = torch.linalg.eigvalsh(dynamics_cov)
-      # dynamics_cov is positive semi-definite, so all its complex parts are 0.
-      evals = spec_norm**2
-      # -1 to make the minimum possible value 0.
-      rank_regularizer = evals.sum() - evals.max() - 1
-      #####################################################
-      return (reconstructions, inp_preds, forw_preds, embedding[:, 1:],
-              embed_preds, rank_regularizer)
-    else:
+    if not self.regularize_rank:
       return (reconstructions, inp_preds, forw_preds, embedding[:, 1:],
               embed_preds, 0)
+    ##### Regularize the rank of koopman operator ######
+    local_transform = torch.matmul(local_transform, self.dynamics_summary)
+
+    dynamics_cov = torch.matmul(self.dynamics_summary.t() / self.latent_dim,
+                                self.dynamics_summary / self.latent_dim)
+    spec_norm = torch.linalg.eigvalsh(dynamics_cov)
+    # dynamics_cov is positive semi-definite, so all its complex parts are 0.
+    evals = spec_norm**2
+    # -1 to make the minimum possible value 0.
+    rank_regularizer = evals.sum() - evals.max() - 1
+    #####################################################
+    return (reconstructions, inp_preds, forw_preds, embedding[:, 1:],
+            embed_preds, rank_regularizer)
 
   def forward(self, org_inps, tgts):
     # number of autoregressive step
     auto_steps = tgts.shape[1] // self.num_steps
     if tgts.shape[1] % self.num_steps > 0:
       auto_steps += 1
+
+    rank_regularizers = []
+    enc_embeds = []
+    pred_embeds = []
 
     if self.use_revin:
       denorm_outs = []
@@ -369,10 +356,6 @@ class Koopman(nn.Module):
       norm_inps = []
       norm_recons = []
       norm_inp_preds = []
-      rank_regularizers = []
-      enc_embeds = []
-      pred_embeds = []
-
       for i in range(auto_steps):
         try:
           inps = org_inps.reshape(org_inps.shape[0], -1, self.input_dim,
@@ -387,14 +370,10 @@ class Koopman(nn.Module):
         norm_inps.append(norm_inp)
 
         single_forward_output = self.single_forward(norm_inp, self.num_steps)
+        (reconstructions, inp_preds, forw_preds, enc_embedding,
+         pred_embedding, rank_regularizer) = single_forward_output
         if self.regularize_rank:
-          (reconstructions, inp_preds, forw_preds, enc_embedding,
-           pred_embedding, rank_regularizer) = single_forward_output
           rank_regularizers.append(rank_regularizer)
-        else:
-          (reconstructions, inp_preds, forw_preds, enc_embedding,
-           pred_embedding, rank_regularizer) = single_forward_output
-
         norm_recons.append(reconstructions)
         norm_inp_preds.append(inp_preds)
         enc_embeds.append(enc_embedding)
@@ -431,21 +410,12 @@ class Koopman(nn.Module):
           [norm_recons, norm_inp_preds, norm_inps], [enc_embeds, pred_embeds]
       ]
 
-      if rank_regularizers:
-        forward_output += [torch.mean(torch.stack(rank_regularizers))]
-
-      return forward_output
-
     else:
       outs = []
       true_inps = []
       recons = []
       inputs_preds = []
-      enc_embeds = []
-      pred_embeds = []
-      rank_regularizers = []
-
-      for i in range(auto_steps):
+      for _ in range(auto_steps):
         try:
           inps = org_inps.reshape(org_inps.shape[0], -1, self.input_dim,
                                   self.num_feats)
@@ -457,14 +427,10 @@ class Koopman(nn.Module):
 
         true_inps.append(inps)
         single_forward_output = self.single_forward(inps, self.num_steps)
+        (reconstructions, inp_preds, forw_preds, enc_embedding,
+         pred_embedding, rank_regularizer) = single_forward_output
         if self.regularize_rank:
-          (reconstructions, inp_preds, forw_preds, enc_embedding,
-           pred_embedding, rank_regularizer) = single_forward_output
           rank_regularizers.append(rank_regularizer)
-        else:
-          (reconstructions, inp_preds, forw_preds, enc_embedding,
-           pred_embedding, rank_regularizer) = single_forward_output
-
         recons.append(reconstructions)
         inputs_preds.append(inp_preds)
         enc_embeds.append(enc_embedding)
@@ -488,7 +454,8 @@ class Koopman(nn.Module):
           [recons, inputs_preds, true_inps], [enc_embeds, pred_embeds]
       ]
 
-      if rank_regularizers:
-        forward_output += [torch.mean(torch.stack(rank_regularizers))]
 
-      return forward_output
+    if rank_regularizers:
+      forward_output += [torch.mean(torch.stack(rank_regularizers))]
+
+    return forward_output

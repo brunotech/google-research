@@ -57,17 +57,15 @@ class CustomDataset(torch.utils.data.Dataset):
         self.test_lsts[i] = (item - self.ts_means[i]) / self.ts_stds[i]
       self.ts_indices = list(range(len(self.test_lsts)))
 
-    elif mode == "train" or "valid":
-
+    else:
       # shuffle slices before split
       np.random.seed(123)
       self.ts_indices = []
       for i, item in enumerate(self.data_lsts):
-        for j in range(0,
-                       len(item) - input_length - output_length,
-                       jumps):
-          self.ts_indices.append((i, j))
-
+        self.ts_indices.extend(
+            (i, j)
+            for j in range(0,
+                           len(item) - input_length - output_length, jumps))
       np.random.shuffle(self.ts_indices)
 
       # 90%-10% train-validation split
@@ -76,8 +74,6 @@ class CustomDataset(torch.utils.data.Dataset):
         self.ts_indices = self.ts_indices[:train_valid_split]
       elif mode == "valid":
         self.ts_indices = self.ts_indices[train_valid_split:]
-    else:
-      raise ValueError("Mode can only be one of train, valid, test")
 
   def __len__(self):
     return len(self.ts_indices)
@@ -135,14 +131,15 @@ class M4Dataset(torch.utils.data.Dataset):
         self.test_lsts[i] = (item - self.ts_means[i]) / self.ts_stds[i]
       self.ts_indices = list(range(len(self.test_lsts)))
 
-    elif mode == "train" or "valid":
-
+    else:
       # shuffle slices before split
       np.random.seed(123)
       self.ts_indices = []
       for i, item in enumerate(self.data_lsts):
-        for j in range(0, len(item)-input_length-output_length, jumps):
-          self.ts_indices.append((i, j))
+        self.ts_indices.extend(
+            (i, j)
+            for j in range(0,
+                           len(item) - input_length - output_length, jumps))
       np.random.shuffle(self.ts_indices)
 
       # 90%-10% train-validation split
@@ -151,8 +148,6 @@ class M4Dataset(torch.utils.data.Dataset):
         self.ts_indices = self.ts_indices[:train_valid_split]
       elif mode == "valid":
         self.ts_indices = self.ts_indices[train_valid_split:]
-    else:
-      raise ValueError("Mode can only be one of train, valid, test")
 
   def __len__(self):
     return len(self.ts_indices)
@@ -213,17 +208,18 @@ class CrytosDataset(torch.utils.data.Dataset):
       # change the input length (< 100) will not affect the target output
       self.ts_indices = []
       for i, item in enumerate(self.test_lsts):
-        for j in range(100, len(item) - output_length, output_length):
-          self.ts_indices.append((i, j))
-
-    elif mode == "train" or "valid":
+        self.ts_indices.extend(
+            (i, j) for j in range(100,
+                                  len(item) - output_length, output_length))
+    else:
       # shuffle slices before split
       np.random.seed(123)
       self.ts_indices = []
       for i, item in enumerate(self.train_data):
-        for j in range(0, len(item)-input_length-output_length, jumps):
-          self.ts_indices.append((i, j))
-
+        self.ts_indices.extend(
+            (i, j)
+            for j in range(0,
+                           len(item) - input_length - output_length, jumps))
       np.random.shuffle(self.ts_indices)
 
       # 90%-10% train-validation split
@@ -232,19 +228,16 @@ class CrytosDataset(torch.utils.data.Dataset):
         self.ts_indices = self.ts_indices[:train_valid_split]
       elif mode == "valid":
         self.ts_indices = self.ts_indices[train_valid_split:]
-    else:
-      raise ValueError("Mode can only be one of train, valid, test")
 
   def __len__(self):
     return len(self.ts_indices)
 
   def __getitem__(self, index):
+    i, j = self.ts_indices[index]
     if self.mode == "test":
-      i, j = self.ts_indices[index]
       x = self.test_lsts[i][j - self.input_length:j]
       y = self.test_lsts[i][j:j + self.output_length]
     else:
-      i, j = self.ts_indices[index]
       x = self.train_data[i][j:j + self.input_length]
       y = self.train_data[i][j + self.input_length:j + self.input_length +
                              self.output_length]
@@ -293,17 +286,17 @@ class TrajDataset(torch.utils.data.Dataset):
       # change the input length (<100) will not affect the target output
       self.ts_indices = []
       for i in range(len(self.test_lsts)):
-        for j in range(50,
-                       300 - output_length,
-                       50):
-          self.ts_indices.append((i, j))
-    elif mode == "train" or "valid":
+        self.ts_indices.extend(
+            (i, j) for j in range(50, 300 - output_length, 50))
+    else:
       # shuffle slices before split
       np.random.seed(123)
       self.ts_indices = []
       for i, item in enumerate(self.train_data):
-        for j in range(0, len(item)-input_length-output_length, jumps):
-          self.ts_indices.append((i, j))
+        self.ts_indices.extend(
+            (i, j)
+            for j in range(0,
+                           len(item) - input_length - output_length, jumps))
       np.random.shuffle(self.ts_indices)
 
       # 90%-10% train-validation split
@@ -312,9 +305,6 @@ class TrajDataset(torch.utils.data.Dataset):
         self.ts_indices = self.ts_indices[:train_valid_split]
       elif mode == "valid":
         self.ts_indices = self.ts_indices[train_valid_split:]
-    else:
-      raise ValueError("Mode can only be one of train, valid, test")
-
     self.ts_means = np.concatenate(self.ts_means, axis=0)
     self.ts_stds = np.concatenate(self.ts_stds, axis=0)
 
@@ -322,12 +312,11 @@ class TrajDataset(torch.utils.data.Dataset):
     return len(self.ts_indices)
 
   def __getitem__(self, index):
+    i, j = self.ts_indices[index]
     if self.mode == "test":
-      i, j = self.ts_indices[index]
       x = self.test_lsts[i][j - self.input_length:j]
       y = self.test_lsts[i][j:j + self.output_length]
     else:
-      i, j = self.ts_indices[index]
       x = self.train_data[i][j:j + self.input_length]
       y = self.train_data[i][j + self.input_length:j + self.input_length +
                              self.output_length]

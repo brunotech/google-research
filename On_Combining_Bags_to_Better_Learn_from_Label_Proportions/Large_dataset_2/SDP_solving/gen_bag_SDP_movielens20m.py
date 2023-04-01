@@ -31,6 +31,7 @@
 # limitations under the License.
 
 """Solving the SDP for generalized bags method."""
+
 import pathlib
 import pickle
 
@@ -46,17 +47,15 @@ n = 50
 data_dir = (pathlib.Path(__file__).parent /
             "../Dataset_Preprocessing/Dataset/").resolve()
 
-print(str(data_dir))
+print(data_dir)
 print()
-file_to_read = open(str(data_dir) + "/corr_matrices", "rb")
-read_list_of_corr_matrices = pickle.load(file_to_read)
-file_to_read.close()
+with open(f"{str(data_dir)}/corr_matrices", "rb") as file_to_read:
+  read_list_of_corr_matrices = pickle.load(file_to_read)
 print(read_list_of_corr_matrices)
 stack_of_corr_matrices = np.stack(read_list_of_corr_matrices)
 
-file_to_read = open(str(data_dir) + "/mean_vecs", "rb")
-read_list_of_mean_vecs = pickle.load(file_to_read)
-file_to_read.close()
+with open(f"{str(data_dir)}/mean_vecs", "rb") as file_to_read:
+  read_list_of_mean_vecs = pickle.load(file_to_read)
 print(read_list_of_mean_vecs)
 stack_of_mean_vecs = np.stack(read_list_of_mean_vecs)
 
@@ -99,8 +98,5 @@ print("The optimal value is", prob.value)
 print("A normalized solution W is")
 print(W.value / np.trace(W.value))
 
-file_to_write = open(str(data_dir) + "/normalized_W_cvxopt", "wb")
-
-pickle.dump(W.value / np.trace(W.value), file_to_write)
-
-file_to_write.close()
+with open(f"{str(data_dir)}/normalized_W_cvxopt", "wb") as file_to_write:
+  pickle.dump(W.value / np.trace(W.value), file_to_write)

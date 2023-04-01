@@ -31,6 +31,7 @@
 # limitations under the License.
 
 """Tensorflow Code for Generalized Bags Training for Scenario I."""
+
 import pathlib
 import pickle
 import random
@@ -45,9 +46,9 @@ rng = np.random.default_rng(80972638)
 path_to_root_data_dir = (pathlib.Path(__file__).parent /
                          "../../Data/").resolve()
 
-directory_full_datasets = str(path_to_root_data_dir) + "/FullDatasets/"
+directory_full_datasets = f"{str(path_to_root_data_dir)}/FullDatasets/"
 
-root_for_experiments = str(path_to_root_data_dir) + "/"
+root_for_experiments = f"{str(path_to_root_data_dir)}/"
 
 cluster_bags_method = 1
 
@@ -291,10 +292,7 @@ for datasetIndex, datasetName in enumerate(datasetName_list):
       print(correlation_matrix)
 
       def label_map(x):
-        if x == -1:
-          return 0
-        else:
-          return 1
+        return 0 if x == -1 else 1
 
       list_of_features = []
 

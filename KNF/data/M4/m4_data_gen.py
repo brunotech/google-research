@@ -14,6 +14,7 @@
 # limitations under the License.
 
 """Download and preprocess M4 dataset."""
+
 import subprocess
 import numpy as np
 import pandas as pd
@@ -43,16 +44,16 @@ for freq in freq_lst:
 # Extract time series from pandaframe and remove NaN
 train_np, test_np = {}, {}
 for freq in freq_lst:
-  temp_lst = []
-  for i in range(train_data[freq].values.shape[0]):
-    temp_lst.append(
-        np.array(train_data[freq].iloc[i, 1:].dropna().values, dtype=float))
+  temp_lst = [
+      np.array(train_data[freq].iloc[i, 1:].dropna().values, dtype=float)
+      for i in range(train_data[freq].values.shape[0])
+  ]
   train_np[freq] = temp_lst
 
-  temp_lst = []
-  for i in range(test_data[freq].values.shape[0]):
-    temp_lst.append(
-        np.array(test_data[freq].iloc[i, 1:].dropna().values, dtype=float))
+  temp_lst = [
+      np.array(test_data[freq].iloc[i, 1:].dropna().values, dtype=float)
+      for i in range(test_data[freq].values.shape[0])
+  ]
   test_np[freq] = temp_lst
 
 # Save data dictionaries into numpy files

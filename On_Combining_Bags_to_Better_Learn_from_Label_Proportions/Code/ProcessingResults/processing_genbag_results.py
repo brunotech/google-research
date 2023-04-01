@@ -31,13 +31,12 @@
 # limitations under the License.
 
 """Processing Tensorflow Code Results for (Generalized) bags."""
+
 import pathlib
 import pandas as pd
 
 path_to_root_results_dir = (pathlib.Path(__file__).parent /
                             "../../Results/").resolve()
-
-tf_exp_results_dir = str(path_to_root_results_dir) + "/Raw_Results/"
 
 dataset_name_list = ["Heart", "Ionosphere", "Australian"]
 
@@ -46,12 +45,13 @@ columns = [
     "LIN(l1)R", "LIN(l2)U", "LIN(l1)U", "LIN(KL)U"
 ]
 
+tf_exp_results_dir = f"{str(path_to_root_results_dir)}/Raw_Results/"
 for dataset_name in dataset_name_list:
 
   dataset_df = pd.DataFrame()
 
-  dataset_outfile = str(
-      path_to_root_results_dir) + "/" + dataset_name + "TFexpStats"
+  dataset_outfile = (f"{str(path_to_root_results_dir)}/" + dataset_name +
+                     "TFexpStats")
 
   for cluster_bags_method in range(1, 8):
 

@@ -31,6 +31,7 @@
 # limitations under the License.
 
 """Generating Training Bags."""
+
 import os
 import pathlib
 import shutil
@@ -49,14 +50,14 @@ n_tot_features_list = [14, 35, 15]
 path_to_root_data_dir = (pathlib.Path(__file__).parent /
                          "../../Data/").resolve()
 
-root_dir = str(path_to_root_data_dir) + "/"
+root_dir = f"{str(path_to_root_data_dir)}/"
 
 for clustering_bags_method in range(1, 9):
   for index_name, name in enumerate(names_list):
     for s in range(1, 6):  # Number of Kfold operations
       Folddirectory = root_dir + name + "/" + "Fold_" + str(s) + "/"
       for splitnumber in range(1, 6):
-        splitdir = Folddirectory + "Split_" + str(splitnumber) + "/"
+        splitdir = f"{Folddirectory}Split_{str(splitnumber)}/"
         trainfile = splitdir + name + "_" + str(s) + "_" + str(
             splitnumber) + "-train.csv"
 
@@ -65,14 +66,12 @@ for clustering_bags_method in range(1, 9):
           numpy_seed = rng.integers(low=1000000, size=1)[0]
           continue
 
-        cluster_dir = splitdir + "ClusterBags_" + str(
-            clustering_bags_method) + "/"
+        cluster_dir = f"{splitdir}ClusterBags_{str(clustering_bags_method)}/"
 
-        directory_to_read = splitdir + "ClusterBags_" + str(2) + "/"
+        directory_to_read = f"{splitdir}ClusterBags_2/"
 
         if clustering_bags_method > 5:
-          cluster_dir = splitdir + "ClusterBags_" + str(clustering_bags_method -
-                                                        1) + "/"
+          cluster_dir = f"{splitdir}ClusterBags_{str(clustering_bags_method - 1)}/"
 
         if os.path.exists(cluster_dir):
           shutil.rmtree(cluster_dir)

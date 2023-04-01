@@ -40,7 +40,7 @@ class CriteoPreprocess:
     self.store_files(self.store_dir + 'val/', 'val',
                      int(split_frac[1] * data_size), data_size)
     # separating training split for creating training bags for LLP
-    self.train_split = self.data[0:int(split_frac[0]*data_size)]
+    self.train_split = self.data[:int(split_frac[0]*data_size)]
 
   def create_bags(self,
                   id1,
@@ -67,18 +67,18 @@ class CriteoPreprocess:
       value_counts = self.train_split['bag_id'].value_counts(
       )  # Specific column
       to_remove = value_counts[value_counts == i].index
-      print('removing: ' + str(len(to_remove)) + ' ids.')
+      print(f'removing: {len(to_remove)} ids.')
 
       s, e, v = 0, 0, 25
-      part_len = int(len(to_remove) / v)
+      part_len = len(to_remove) // v
 
       if part_len <= 1:
         break
       while True:
         e = min(s + part_len, len(to_remove))
-        print('bag:' + str(i) + ':' + str(s), end=' ')
+        print(f'bag:{str(i)}:{str(s)}', end=' ')
         self.train_split['bag_id'].loc[self.train_split['bag_id'].isin(
-            to_remove[s:e])] = 'bag:' + str(i) + ':' + str(s)
+            to_remove[s:e])] = f'bag:{str(i)}:{str(s)}'
         s = e
         if s >= len(to_remove):
           break
@@ -90,7 +90,7 @@ class CriteoPreprocess:
     vc = self.train_split['bag_id'].value_counts()
     idx = vc[vc < max_bag_size].index
     idx = idx.tolist()
-    print('Total no. of bags: '+ str(len(idx)))
+    print(f'Total no. of bags: {len(idx)}')
     if not os.path.exists(store_dir):
       os.makedirs(store_dir)
     start_df, my_df = True, None
@@ -99,7 +99,7 @@ class CriteoPreprocess:
     while s < len(idx):
       e = min(s+bag_per_file, len(idx))
       bag_df = self.train_split[self.train_split['bag_id'].isin(idx[s:e])]
-      print(str(s)+ ' : '+  str(e) +  ' === '+ str(bag_df.shape))
+      print(f'{s} : {str(e)} === {str(bag_df.shape)}')
       s = e
       if start_df:
         my_df = bag_df
@@ -121,10 +121,8 @@ class CriteoPreprocess:
 
   def add_col_names(self):
     column_names = ['label']
-    for i in range(13):
-      column_names.append('I'+str(i+1))
-    for i in range(26):
-      column_names.append('C'+str(i+1))
+    column_names.extend(f'I{str(i + 1)}' for i in range(13))
+    column_names.extend(f'C{str(i + 1)}' for i in range(26))
     self.data.columns = column_names
     cols = self.data.columns.values
     self.dense_feats = [f for f in cols if f[0] == 'I']
@@ -141,7 +139,7 @@ class CriteoPreprocess:
       total_unique += to_keep
       print(col + ':' + str(to_keep) + ':' + str(len(to_remove)))
       self.data[col].loc[self.data[col].isin(to_remove)] = np.nan
-    print('Total unique: ' + str(total_unique))
+    print(f'Total unique: {str(total_unique)}')
 
   def rename(self, data_sparse):
     for col in self.sparse_feats:

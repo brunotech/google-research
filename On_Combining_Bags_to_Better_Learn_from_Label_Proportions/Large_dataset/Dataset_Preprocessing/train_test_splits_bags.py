@@ -31,6 +31,7 @@
 # limitations under the License.
 
 """Crearing train and test splits and bag training files."""
+
 import pathlib
 import pandas as pd
 from sklearn.model_selection import KFold
@@ -51,31 +52,25 @@ for train_index, test_index in kf.split(df):
   df_train_split = df.iloc[train_index]
   df_test_split = df.iloc[test_index]
 
-  print("Train set size split " + str(i))
+  print(f"Train set size split {str(i)}")
   print(len(df_train_split))
 
-  print("Test set size split " + str(i))
+  print(f"Test set size split {str(i)}")
   print(len(df_test_split))
 
-  train_file_to_write = (
-      str(data_dir) + "/Split_" + str(i) + "/train_Split_" + str(i) +
-      "-processed-allints_selected_cols_C15_C14_bucket_index_C7_offsets.csv")
+  train_file_to_write = f"{str(data_dir)}/Split_{str(i)}/train_Split_{str(i)}-processed-allints_selected_cols_C15_C14_bucket_index_C7_offsets.csv"
 
-  test_file_to_write = (
-      str(data_dir) + "/Split_" + str(i) + "/test_Split_" + str(i) +
-      "-processed-allints_selected_cols_C15_C14_bucket_index_C7_offsets.csv")
+  test_file_to_write = f"{str(data_dir)}/Split_{str(i)}/test_Split_{str(i)}-processed-allints_selected_cols_C15_C14_bucket_index_C7_offsets.csv"
 
-  bags_file_to_write = (
-      str(data_dir) + "/Split_" + str(i) + "/BagTrain_Split_" + str(i) +
-      "-processed-allints_selected_cols_C15_C14_bucket_index_C7_offsets.ftr")
+  bags_file_to_write = f"{str(data_dir)}/Split_{str(i)}/BagTrain_Split_{str(i)}-processed-allints_selected_cols_C15_C14_bucket_index_C7_offsets.ftr"
 
   df_train_split.to_csv(train_file_to_write, index=False)
 
-  print("train file " + str(i) + " written.")
+  print(f"train file {str(i)} written.")
 
   df_test_split.to_csv(test_file_to_write, index=False)
 
-  print("test file " + str(i) + " written.")
+  print(f"test file {str(i)} written.")
 
   df_aggregated = df_train_split.groupby(["C7", "C14", "C14_bucket_index"
                                          ]).agg(list).reset_index()
@@ -86,11 +81,11 @@ for train_index, test_index in kf.split(df):
   # pylint: disable=unnecessary-lambda
   df_aggregated["label_count"] = df_aggregated["label"].apply(lambda x: sum(x))
 
-  print("df_aggregated " + str(i) + " created. Size:")
+  print(f"df_aggregated {str(i)} created. Size:")
   print(len(df_aggregated.index))
 
   df_aggregated.to_feather(bags_file_to_write)
 
-  print("bags train file " + str(i) + " written.")
+  print(f"bags train file {str(i)} written.")
 
   i = i + 1

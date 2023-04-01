@@ -31,6 +31,7 @@
 # limitations under the License.
 
 """Dataset Preprocessing and feature bucketing."""
+
 import pathlib
 import pickle
 
@@ -41,16 +42,14 @@ list_of_cols = []
 
 colnames = ['label']
 
-for i in range(1, 14):
-  colnames.append('N' + str(i))
-
-for i in range(1, 27):
-  colnames.append('C' + str(i))
-
+colnames.extend(f'N{str(i)}' for i in range(1, 14))
+colnames.extend(f'C{str(i)}' for i in range(1, 27))
 data_dir = (pathlib.Path(__file__).parent / 'Dataset/').resolve()
 
-df_full = pd.read_csv(
-    str(data_dir) + '/train.txt', header=None, delimiter='\t', names=colnames)
+df_full = pd.read_csv(f'{str(data_dir)}/train.txt',
+                      header=None,
+                      delimiter='\t',
+                      names=colnames)
 
 extended_cuts = [1.5**j - 0.51 for j in range(40)]
 
@@ -59,28 +58,28 @@ extended_cuts.insert(0, float('-inf'))
 extended_cuts.append(float('inf'))
 
 for i in range(1, 14):
-  colname = 'N' + str(i)
+  colname = f'N{str(i)}'
   df_full[colname] = pd.cut(df_full[colname], labels=False, bins=extended_cuts)
-  print(str(i) + 'th column processed.')
+  print(f'{str(i)}th column processed.')
   print(df_full.head(10).to_string())
   df_full[colname] = df_full[colname].fillna(df_full[colname].mean())
-  print(str(i) + 'th column processed with mean')
+  print(f'{str(i)}th column processed with mean')
   print(df_full.head(10).to_string())
 
 for i in range(1, 27):
-  colname = 'C' + str(i)
+  colname = f'C{str(i)}'
   df_array, _ = pd.factorize(df_full[colname])
   df_full[colname] = pd.Series(df_array)
-  print(str(i) + 'th column ordinalled')
+  print(f'{str(i)}th column ordinalled')
   print(df_full.head(10).to_string())
   mean_colname = df_full[df_full[colname] >= 0][colname].mean()
   df_full[colname].replace(-1, int(mean_colname), inplace=True)
-  print(str(i) + 'th column processed with mean')
+  print(f'{str(i)}th column processed with mean')
   print(df_full.head(10).to_string())
 
 df_full = df_full.astype(int)
 
-df_full.to_csv(str(data_dir) + '/train-processed-ints.csv', index=False)
+df_full.to_csv(f'{str(data_dir)}/train-processed-ints.csv', index=False)
 
 df_C15_index_freq = df_full['C15'].value_counts(
         sort=False).to_frame().reset_index().sort_values(
@@ -92,7 +91,7 @@ list_of_list_of_indices = []
 
 list_of_cumufreqs = []
 
-for i in range(50):
+for _ in range(50):
   list_of_list_of_indices.append([])
   list_of_cumufreqs.append(0)
 
@@ -156,11 +155,10 @@ df_to_bucket = df_C14_numbags.sort_values(
 
 print(df_to_bucket.to_string())
 
-list_of_list_of_indices = []
-
 list_of_cumufreqs = []
 
-for i in range(5):
+list_of_list_of_indices = []
+for _ in range(5):
   list_of_list_of_indices.append([])
   list_of_cumufreqs.append(0)
 
@@ -235,10 +233,8 @@ for i in range(5):
 
 print(list_of_corr_matrices)
 
-file_to_write = open(str(data_dir) + '/corr_matrices_C14_bucket', 'wb')
-pickle.dump(list_of_corr_matrices, file_to_write)
-file_to_write.close()
-
+with open(f'{str(data_dir)}/corr_matrices_C14_bucket', 'wb') as file_to_write:
+  pickle.dump(list_of_corr_matrices, file_to_write)
 list_of_mean_vecs = []
 
 for i in range(5):
@@ -254,11 +250,8 @@ for i in range(5):
 
 print(list_of_mean_vecs)
 
-file_to_write = open(str(data_dir) + '/mean_vecs_C14_bucket', 'wb')
-
-pickle.dump(list_of_mean_vecs, file_to_write)
-file_to_write.close()
-
+with open(f'{str(data_dir)}/mean_vecs_C14_bucket', 'wb') as file_to_write:
+  pickle.dump(list_of_mean_vecs, file_to_write)
 list_of_cols_with_bucket_indices_C7_C14 = ([
     'label', 'N1', 'N2', 'N3', 'N4', 'N5', 'N6', 'N7', 'N8', 'N9', 'N10', 'N11',
     'N12', 'N13', 'C1', 'C2', 'C5', 'C6', 'C8', 'C9', 'C11', 'C13', 'C17',
@@ -288,6 +281,6 @@ for i in range(1, no_of_cols):
   df_selected_cols[colname] = df_selected_cols[colname] + offset + i - 1
 
 df_selected_cols.to_csv(
-    str(data_dir) +
-    '/train-processed-allints_selected_cols_C15_C14_bucket_index_C7_C14_offsets.csv',
-    index=False)
+    f'{str(data_dir)}/train-processed-allints_selected_cols_C15_C14_bucket_index_C7_C14_offsets.csv',
+    index=False,
+)

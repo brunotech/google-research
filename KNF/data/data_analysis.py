@@ -38,9 +38,7 @@ def forecastabilty(ts):
   fourier_ts /= fourier_ts.sum()
   entropy_ts = entropy(fourier_ts)
   fore_ts = 1-entropy_ts/(np.log(len(ts)))
-  if np.isnan(fore_ts):
-    return 0
-  return fore_ts
+  return 0 if np.isnan(fore_ts) else fore_ts
 
 
 def forecastabilty_moving(ts, window, jump=1):
@@ -131,7 +129,7 @@ def acf(ts, k):
     s1 = s1 + ((ts[i] - m) * (ts[i - k] - m))
 
   s2 = 0
-  for i in range(0, len(ts)):
+  for i in range(len(ts)):
     s2 = s2 + ((ts[i] - m)**2)
 
   return float(s1 / s2)

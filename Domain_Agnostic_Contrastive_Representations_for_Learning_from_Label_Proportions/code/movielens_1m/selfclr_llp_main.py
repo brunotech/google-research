@@ -57,12 +57,12 @@ class ROCCallback(keras.callbacks.Callback):
   def on_epoch_end(self, epoch, logs=None):
     auroc = 0.
     auroc = self.get_auroc()
-    print('Validation AUROC score: {}'.format(auroc), end='')
+    print(f'Validation AUROC score: {auroc}', end='')
     if self.best_auroc <= auroc:
       print('... best Validation AUROC.')
       self.best_auroc = auroc
     else:
-      print('Did not improve from: {}'.format(self.best_auroc))
+      print(f'Did not improve from: {self.best_auroc}')
     print('Saving the last model at: ' + self.model_path)
     self.model.save(self.model_path)
 

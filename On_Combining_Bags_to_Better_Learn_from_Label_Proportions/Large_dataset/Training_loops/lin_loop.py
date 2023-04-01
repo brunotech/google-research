@@ -85,16 +85,11 @@ for split in range(5):
 
   tf.random.set_seed(tf_seed)
 
-  train_file_to_read = (
-      str(data_dir) + '/Split_' + str(split) + '/train_Split_' + str(split) +
-      '-processed-allints_selected_cols_C15_C14_bucket_index_C7_offsets.csv')
+  train_file_to_read = f'{str(data_dir)}/Split_{str(split)}/train_Split_{str(split)}-processed-allints_selected_cols_C15_C14_bucket_index_C7_offsets.csv'
 
-  test_file_to_read = (
-      str(data_dir) + '/Split_' + str(split) + '/test_Split_' + str(split) +
-      '-processed-allints_selected_cols_C15_C14_bucket_index_C7_offsets.csv')
+  test_file_to_read = f'{str(data_dir)}/Split_{str(split)}/test_Split_{str(split)}-processed-allints_selected_cols_C15_C14_bucket_index_C7_offsets.csv'
 
-  result_file = (
-      str(data_dir) + '/Split_' + str(split) + '/result_lin_' + str(split))
+  result_file = f'{str(data_dir)}/Split_{str(split)}/result_lin_{str(split)}'
 
   df_train = pd.read_csv(train_file_to_read, usecols=list_of_cols)
 

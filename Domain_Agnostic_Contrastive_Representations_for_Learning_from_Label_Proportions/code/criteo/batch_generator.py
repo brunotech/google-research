@@ -63,9 +63,7 @@ class MiniBatchGenerator:
       ]
       y = [self.data[self.start:self.end]['label'].values]
       self.start = self.end
-      self.next_file = False
-      if self.end >= self.data.shape[0]:
-        self.next_file = True
+      self.next_file = self.end >= self.data.shape[0]
       return dense_x + sparse_x, np.array(y).transpose().astype('float32')
 
   def process_dense_feats(self, data):
@@ -121,7 +119,7 @@ class BagGenerator:
   def update_label(self, bag_df):
     total_pos = sum(bag_df['label'])
     total = bag_df.shape[0]
-    bag_df[0:1]['label'] = total
+    bag_df[:1]['label'] = total
     bag_df[1:2]['label'] = total_pos
     return
 
@@ -132,14 +130,14 @@ class BagGenerator:
       y2[s, 1] = 0
       y2[s + 1, 0] = y[s + 1, 0] / y[s, 0]
       y2[s + 1, 1] = 1 - y2[s + 1, 0]
-      s = s + int(y[s])
+      s += int(y[s])
     return y2
 
   def process_dllp(self, y):
     s = 0
     while s < y.shape[0]:
       y[s + 1] = y[s + 1] / y[s]
-      s = s + int(y[s])
+      s += int(y[s])
     return y
 
   def __next__(self):
@@ -153,18 +151,17 @@ class BagGenerator:
           self.load_next()
         bag_df = self.data.loc[self.data.bag_id == self.name_lst[self.name_cnt]]
         if bag_df.shape[0] > self.max_size:
-          self.name_cnt += 1
+          pass
         elif start_df:
           self.update_label(bag_df)
           my_df = bag_df
-          self.name_cnt += 1
           bag_cnt += 1
           start_df = False
         else:
           self.update_label(bag_df)
           my_df = pd.concat([my_df, bag_df], axis=0)
-          self.name_cnt += 1
           bag_cnt += 1
+        self.name_cnt += 1
         # update conditions.
         if self.name_cnt >= len(self.name_lst):
           self.next_file = True

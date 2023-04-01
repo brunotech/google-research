@@ -39,10 +39,7 @@ sigma = 1
 
 
 def hardsign(x):
-  if np.sign(x) == 1:
-    return 1
-  else:
-    return -1
+  return 1 if np.sign(x) == 1 else -1
 
 
 # pylint: disable=redefined-outer-name

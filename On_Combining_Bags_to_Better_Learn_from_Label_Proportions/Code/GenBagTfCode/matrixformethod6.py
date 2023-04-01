@@ -199,8 +199,6 @@ def returnW(n, k, listofAis, lambdafactor):  # pylint: disable=invalid-name
   print(sol["primal objective"])
 
 
-list_ofAis = []
-
 a = np.asarray([[0.4, 0.4, 0.8, 0.8, 0.8, 0.8]])
 
 A = np.matmul(np.transpose(a), a)
@@ -211,8 +209,7 @@ np.fill_diagonal(A, a)
 
 print(A)
 
-list_ofAis.append(A)
-
+list_ofAis = [A]
 a = np.asarray([[0.2, 0.2, 0, 0, 0, 0]])
 
 A = np.matmul(np.transpose(a), a)

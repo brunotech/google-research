@@ -31,6 +31,7 @@
 # limitations under the License.
 
 """Preprocessing Movielens-20m dataset."""
+
 import datetime
 import pathlib
 import pickle
@@ -42,7 +43,7 @@ np.random.seed(527492)
 
 data_dir = (pathlib.Path(__file__).parent / "Dataset/").resolve()
 
-df_genome_scores = pd.read_csv(str(data_dir) + "/genome-scores.csv")
+df_genome_scores = pd.read_csv(f"{str(data_dir)}/genome-scores.csv")
 
 df_movie_genome_tags_rowwise = df_genome_scores.pivot(
     index="movieId", columns="tagId", values="relevance").reset_index()
@@ -51,9 +52,9 @@ df_movie_genome_tags_rowwise = df_movie_genome_tags_rowwise.rename_axis(
     None, axis=1)
 
 df_movie_genome_tags_rowwise.to_csv(
-    str(data_dir) + "/movie_genome_tags_rowwise.csv", index=False)
+    f"{str(data_dir)}/movie_genome_tags_rowwise.csv", index=False)
 
-df_all_ratings = pd.read_csv(str(data_dir) + "/ratings.csv")
+df_all_ratings = pd.read_csv(f"{str(data_dir)}/ratings.csv")
 
 df_filtered_ratings = pd.merge(
     df_all_ratings, df_movie_genome_tags_rowwise[["movieId"]], on="movieId")
@@ -68,7 +69,7 @@ df_filtered_ratings["date"] = df_filtered_ratings.apply(
 
 df_filtered_ratings["date"] = pd.to_numeric(df_filtered_ratings["date"])
 
-df_genres = pd.read_csv(str(data_dir) + "/movies.csv")
+df_genres = pd.read_csv(f"{str(data_dir)}/movies.csv")
 
 df_filtered_ratings = pd.merge(
     df_filtered_ratings, df_genres[["movieId", "genres"]], on="movieId")
@@ -90,7 +91,7 @@ list_of_list_of_indices = []
 
 list_of_cumufreqs = []
 
-for i in range(50):
+for _ in range(50):
   list_of_list_of_indices.append([])
   list_of_cumufreqs.append(0)
 
@@ -170,11 +171,8 @@ for i in range(1, 13):
 
   list_of_corr_matrices.append(sum_outer_prod / len(ithlist_of_arrays))
 
-file_to_write = open(str(data_dir) + "/corr_matrices", "wb")
-
-pickle.dump(list_of_corr_matrices, file_to_write)
-file_to_write.close()
-
+with open(f"{str(data_dir)}/corr_matrices", "wb") as file_to_write:
+  pickle.dump(list_of_corr_matrices, file_to_write)
 list_of_mean_vecs = []
 
 for i in range(1, 13):
@@ -187,15 +185,13 @@ for i in range(1, 13):
 
   list_of_mean_vecs.append(sum_vecs / len(ithlist_of_arrays))
 
-file_to_write = open(str(data_dir) + "/mean_vecs", "wb")
-
-pickle.dump(list_of_mean_vecs, file_to_write)
-file_to_write.close()
-
+with open(f"{str(data_dir)}/mean_vecs", "wb") as file_to_write:
+  pickle.dump(list_of_mean_vecs, file_to_write)
 df_movie_genome_tags_rowwise.set_index(
     keys="movieId", inplace=True, verify_integrity=True)
 
 df_filtered_ratings["label"] = df_filtered_ratings.apply(
     lambda x: 0 if x["rating"] < 4.0 else 1, axis=1)
 
-df_filtered_ratings.to_csv(str(data_dir) + "/filtered_ratings.csv", index=False)
+df_filtered_ratings.to_csv(f"{str(data_dir)}/filtered_ratings.csv",
+                           index=False)

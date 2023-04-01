@@ -121,19 +121,13 @@ def main(argv):
   test_loader = data.DataLoader(
       test_set, batch_size=batch_size, shuffle=False, num_workers=4)
 
-  model_name = "Koopman_" + str(
-      FLAGS.dataset
-  ) + "_seed{}_jumps{}_freq{}_poly{}_sin{}_exp{}_bz{}_lr{}_dim{}_inp{}_pred{}_num{}_enchid{}_dechid{}_trm{}_conhid{}_enclys{}_declys{}_trmlys{}_conlys{}_latdim{}_RevIN{}_insnorm{}_regrank{}_globalK{}_contK{}".format(
-      FLAGS.seed, FLAGS.jumps, freq, FLAGS.num_poly, FLAGS.num_sins,
-      FLAGS.num_exp, batch_size, learning_rate, input_dim, input_length,
-      train_output_length, num_steps, encoder_hidden_dim, decoder_hidden_dim,
-      FLAGS.transformer_dim, control_hidden_dim, encoder_num_layers,
-      decoder_num_layers, FLAGS.transformer_num_layers, control_num_layers,
-      latent_dim, use_revin, use_instancenorm, regularize_rank,
-      add_global_operator, add_control)
+  model_name = (
+      f"Koopman_{str(FLAGS.dataset)}" +
+      f"_seed{FLAGS.seed}_jumps{FLAGS.jumps}_freq{freq}_poly{FLAGS.num_poly}_sin{FLAGS.num_sins}_exp{FLAGS.num_exp}_bz{batch_size}_lr{learning_rate}_dim{input_dim}_inp{input_length}_pred{train_output_length}_num{num_steps}_enchid{encoder_hidden_dim}_dechid{decoder_hidden_dim}_trm{FLAGS.transformer_dim}_conhid{control_hidden_dim}_enclys{encoder_num_layers}_declys{decoder_num_layers}_trmlys{FLAGS.transformer_num_layers}_conlys{control_num_layers}_latdim{latent_dim}_RevIN{use_revin}_insnorm{use_instancenorm}_regrank{regularize_rank}_globalK{add_global_operator}_contK{add_control}"
+  )
 
   print(model_name)
-  results_dir = FLAGS.dataset + "_results/"
+  results_dir = f"{FLAGS.dataset}_results/"
   if os.path.exists(results_dir + model_name + ".pth"):
     model, last_epoch, learning_rate = torch.load(results_dir + model_name +
                                                   ".pth")
@@ -243,7 +237,7 @@ def main(argv):
                                                 loss_fun)
 
   # Denormalize the predictions
-  if FLAGS.dataset == "M4" or FLAGS.dataset == "mini":
+  if FLAGS.dataset in ["M4", "mini"]:
     test_preds = (test_preds * test_set.ts_stds.reshape(
         -1, 1, 1)) + test_set.ts_means.reshape(-1, 1, 1)
     test_tgts = (test_tgts * test_set.ts_stds.reshape(
@@ -273,8 +267,10 @@ def main(argv):
       {
           "test_preds": test_preds,
           "test_tgts": test_tgts,
-          "eval_score": eval_metric(test_preds, test_tgts)
-      }, results_dir + "test_" + model_name + ".pt")
+          "eval_score": eval_metric(test_preds, test_tgts),
+      },
+      f"{results_dir}test_{model_name}.pt",
+  )
 
   print(model_name)
   print(eval_metric(test_preds, test_tgts))

@@ -31,6 +31,7 @@
 # limitations under the License.
 
 """Creating the 5x5-fold splits."""
+
 import os
 import pathlib
 import numpy as np
@@ -44,9 +45,9 @@ names_list = ["Heart", "Ionosphere", "Australian"]
 path_to_root_data_dir = (pathlib.Path(__file__).parent /
                          "../../Data/").resolve()
 
-directory_full_datasets = str(path_to_root_data_dir) + "/FullDatasets/"
+directory_full_datasets = f"{str(path_to_root_data_dir)}/FullDatasets/"
 
-root_dir = str(path_to_root_data_dir) + "/"
+root_dir = f"{str(path_to_root_data_dir)}/"
 
 for name in names_list:
   print("For " + name)

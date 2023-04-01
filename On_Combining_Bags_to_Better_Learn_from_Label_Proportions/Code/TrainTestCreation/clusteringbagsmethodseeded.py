@@ -79,7 +79,7 @@ def makeclusterbags(n_clusters,
     list_of_features = []
 
     for i in range(1, n_tot_features):
-      list_of_features.append("x." + str(i))
+      list_of_features.append(f"x.{str(i)}")
 
     list_of_features.append("constant")
 
@@ -103,15 +103,8 @@ def makeclusterbags(n_clusters,
       cluster_to_indices_list.append(
           indicesofelements(cluster_labels, cluster_label))
 
-    # for cluster_label in range(n_clusters):
-    #     print("size of cluster ", cluster_label, " is ",
-    #     len(cluster_to_indices_list[cluster_label]))
-
-    writing_to_cluster_indices_filename = open(cluster_indices_filename, "wb")
-
-    pickle.dump(cluster_to_indices_list, writing_to_cluster_indices_filename)
-
-    writing_to_cluster_indices_filename.close()
+    with open(cluster_indices_filename, "wb") as writing_to_cluster_indices_filename:
+      pickle.dump(cluster_to_indices_list, writing_to_cluster_indices_filename)
 
   else:
     # ###Reading instead of creating

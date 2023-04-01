@@ -31,6 +31,7 @@
 # limitations under the License.
 
 """LMMCM Loops for Australian Dataset."""
+
 from pathlib import Path  # pylint: disable=g-importing-member
 import random
 from models.kernel_model import *  # pylint: disable=wildcard-import
@@ -43,7 +44,7 @@ rng = np.random.default_rng(74682303)  # pylint: disable=undefined-variable
 
 path_to_root_data_dir = (Path(__file__).parent / "../../Data/").resolve()
 
-root_for_experiments = str(path_to_root_data_dir) + "/"
+root_for_experiments = f"{str(path_to_root_data_dir)}/"
 
 dataset_name = "Australian"
 

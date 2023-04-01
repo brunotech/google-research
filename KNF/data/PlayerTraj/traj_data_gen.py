@@ -76,14 +76,13 @@ class Game:
     }
 
   def __repr__(self):
-    descr = 'Visitor: ' + repr(self.visitor)
-    descr += 'Home: ' + repr(self.home)
+    descr = f'Visitor: {repr(self.visitor)}'
+    descr += f'Home: {repr(self.home)}'
     return descr
 
   def get_player_list(self):
-    names = list(self.visitor.players_mapping.keys()) + list(
+    return list(self.visitor.players_mapping.keys()) + list(
         self.home.players_mapping.keys())
-    return names
 
   def get_player_movement(self, player_name, event_id):
     """extracts position and time."""
@@ -102,11 +101,9 @@ class Game:
 
 def is_connected(x, y):
   """checks if the trajectory is connected."""
-  for x0, y0, x1, y1 in zip(x[:-1], y[:-1], x[1:], y[1:]):
-    if np.abs(x0 - x1) > 3 or np.abs(y0 - y1) > 3:
-      # check disconnectedness if the neighbouring position is larger than 3 ft.
-      return False
-  return True
+  return not any(
+      np.abs(x0 - x1) > 3 or np.abs(y0 - y1) > 3
+      for x0, y0, x1, y1 in zip(x[:-1], y[:-1], x[1:], y[1:]))
 
 
 def sample_movement_from_games(game_json_list, rngkey):

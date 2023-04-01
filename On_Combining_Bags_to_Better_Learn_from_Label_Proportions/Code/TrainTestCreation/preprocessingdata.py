@@ -31,6 +31,7 @@
 # limitations under the License.
 
 """Preprocessing the raw data files for training/test set creation."""
+
 import pathlib
 import random
 import numpy as np
@@ -47,9 +48,9 @@ path_to_root_data_dir = (pathlib.Path(__file__).parent
 path_to_top_dir = (pathlib.Path(__file__).parent
                    / "../../").resolve()
 
-directory_full_datasets = str(path_to_root_data_dir) + "/FullDatasets/"
+directory_full_datasets = f"{str(path_to_root_data_dir)}/FullDatasets/"
 
-directory_orig_datasets = str(path_to_top_dir) + "/OrigData/"
+directory_orig_datasets = f"{str(path_to_top_dir)}/OrigData/"
 
 # ##### Heart##########
 
@@ -61,20 +62,15 @@ df = pd.read_csv(file_to_read, sep=" ", header=None)
 
 no_of_cols = len(df.columns)
 
-df.columns = ["x." + str(i) for i in range(1, no_of_cols + 1)]
+df.columns = [f"x.{str(i)}" for i in range(1, no_of_cols + 1)]
 
-last_col = "x." + str(
-    no_of_cols
-)  # This is the label column.
+last_col = f"x.{no_of_cols}"
 # New one with {-1,1} will be added to the front, this will be removed
 
 
 def label_map(x):
   """Mapping the original labels."""
-  if x == 2:
-    return 1
-  else:
-    return -1
+  return 1 if x == 2 else -1
 
 
 # pylint: disable=unnecessary-lambda
@@ -89,11 +85,7 @@ df.insert(loc=0, column="label", value=df[last_col])
 # drop last column
 df = df.drop(last_col, axis=1)
 
-list_of_features = []
-
-for i in range(1, no_of_cols):
-  list_of_features.append("x." + str(i))
-
+list_of_features = [f"x.{str(i)}" for i in range(1, no_of_cols)]
 # Add a constant column
 df["constant"] = 1
 
@@ -114,20 +106,15 @@ df = pd.read_csv(file_to_read, header=None)
 
 no_of_cols = len(df.columns)
 
-df.columns = ["x." + str(i) for i in range(1, no_of_cols + 1)]
+df.columns = [f"x.{str(i)}" for i in range(1, no_of_cols + 1)]
 
-last_col = "x." + str(
-    no_of_cols
-)  # This is the label column.
+last_col = f"x.{no_of_cols}"
 # New one with {-1,1} will be added to the front, this will be removed
 
 
 def label_map(x):  # pylint: disable=function-redefined
   """Mapping the original labels."""
-  if x == "g":
-    return 1
-  else:
-    return -1
+  return 1 if x == "g" else -1
 
 
 # pylint: disable=unnecessary-lambda
@@ -142,11 +129,7 @@ df.insert(loc=0, column="label", value=df[last_col])
 # drop last column
 df = df.drop(last_col, axis=1)
 
-list_of_features = []
-
-for i in range(1, no_of_cols):
-  list_of_features.append("x." + str(i))
-
+list_of_features = [f"x.{str(i)}" for i in range(1, no_of_cols)]
 # Add a constant column
 df["constant"] = 1
 
@@ -167,20 +150,15 @@ df = pd.read_csv(file_to_read, sep=" ", header=None)
 
 no_of_cols = len(df.columns)
 
-df.columns = ["x." + str(i) for i in range(1, no_of_cols + 1)]
+df.columns = [f"x.{str(i)}" for i in range(1, no_of_cols + 1)]
 
-last_col = "x." + str(
-    no_of_cols
-)  # This is the label column.
+last_col = f"x.{no_of_cols}"
 # New one with {-1,1} will be added to the front, this will be removed
 
 
 def label_map(x):  # pylint: disable=function-redefined
   """Mapping the original labels."""
-  if x == 1:
-    return 1
-  else:
-    return -1
+  return 1 if x == 1 else -1
 
 
 # pylint: disable=unnecessary-lambda
@@ -195,11 +173,7 @@ df.insert(loc=0, column="label", value=df[last_col])
 # drop last column
 df = df.drop(last_col, axis=1)
 
-list_of_features = []
-
-for i in range(1, no_of_cols):
-  list_of_features.append("x." + str(i))
-
+list_of_features = [f"x.{str(i)}" for i in range(1, no_of_cols)]
 # Add a constant column
 df["constant"] = 1
 

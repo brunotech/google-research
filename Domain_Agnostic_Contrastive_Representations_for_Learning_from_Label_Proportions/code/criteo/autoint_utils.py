@@ -194,7 +194,7 @@ class AutoInt:
           activation='relu')(
               x)
       return Model(self.dense_inputs + self.sparse_inputs, output_layer)
-    if model_type == 'dllp' or model_type == 'supervised':
+    if model_type in ['dllp', 'supervised']:
       out_layer = Dense(1, activation='sigmoid')(x)
       return Model(self.dense_inputs+ self.sparse_inputs, out_layer)
     return

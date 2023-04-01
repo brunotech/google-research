@@ -71,7 +71,7 @@ def my_model():
 
 epochs = 20
 
-genome_file_to_read = (str(data_dir) + '/movie_genome_tags_rowwise.csv')
+genome_file_to_read = f'{str(data_dir)}/movie_genome_tags_rowwise.csv'
 
 genome_df = pd.read_csv(genome_file_to_read, usecols=genome_file_cols)
 
@@ -95,16 +95,11 @@ for split in range(5):
 
   tf.random.set_seed(tf_seed)
 
-  train_file_to_read = (
-      str(data_dir) + '/Split_' + str(split) + '/train_Split_' + str(split) +
-      '-filtered_ratings.csv')
+  train_file_to_read = f'{str(data_dir)}/Split_{str(split)}/train_Split_{str(split)}-filtered_ratings.csv'
 
-  test_file_to_read = (
-      str(data_dir) + '/Split_' + str(split) + '/test_Split_' + str(split) +
-      '-filtered_ratings.csv')
+  test_file_to_read = f'{str(data_dir)}/Split_{str(split)}/test_Split_{str(split)}-filtered_ratings.csv'
 
-  result_file = (
-      str(data_dir) + '/Split_' + str(split) + '/result_lin_' + str(split))
+  result_file = f'{str(data_dir)}/Split_{str(split)}/result_lin_{str(split)}'
 
   df_train = pd.read_csv(train_file_to_read, usecols=filtered_rating_cols)
 
@@ -112,7 +107,7 @@ for split in range(5):
 
   num_steps = int(len(df_train.index) / batch_size)
 
-  print('num_steps: ' + str(num_steps))
+  print(f'num_steps: {num_steps}')
 
   model = my_model()
   model.compile(
@@ -127,7 +122,7 @@ for split in range(5):
                                           size=1)[0]).reset_index(drop=True)
 
     for step in range(num_steps):
-      print('epoch, step : ' + str(epoch) + ' ' + str(step), end='\r')
+      print(f'epoch, step : {str(epoch)} {str(step)}', end='\r')
       df_train_shuffled_slice = df_train_shuffled.iloc[(step * batch_size):(
           (step + 1) * batch_size), :].reset_index(drop=True)
 
@@ -167,8 +162,7 @@ for split in range(5):
         df_test_batch['Y_genomes_for_test'].to_numpy().flatten())
 
     results_string = (
-        str(split) + ',' + str(epoch) + ',' + str(auc_metric.result().numpy()) +
-        '\n')
+        f'{str(split)},{str(epoch)},{str(auc_metric.result().numpy())}' + '\n')
 
     print('Test Results: ')
     print(results_string)

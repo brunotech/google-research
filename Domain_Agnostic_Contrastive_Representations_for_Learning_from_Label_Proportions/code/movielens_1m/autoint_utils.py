@@ -173,7 +173,7 @@ class AutoInt:
       out_layer = Dense(cluster_per_class * self.nb_class, activation='relu')(x)
       return Model(self.sparse_inputs, out_layer)
 
-    if model_type == 'dllp' or model_type == 'supervised':
+    if model_type in ['dllp', 'supervised']:
       out_layer = Dense(1, activation='sigmoid')(x)
       return Model(self.sparse_inputs, out_layer)
     return

@@ -49,9 +49,7 @@ class MiniBatchGenerator:
       y_batch = [self.data[self.start:self.end]['rating 2'].values]
 
       self.start = self.end
-      self.restart = False
-      if self.end >= self.data.shape[0]:
-        self.restart = True
+      self.restart = self.end >= self.data.shape[0]
       return x_batch, np.array(y_batch).transpose().astype('float32')
 
 
@@ -79,7 +77,7 @@ class BagGenerator:
   def update_label(self, bag_df):
     total_pos = sum(bag_df['rating 2'])
     total = bag_df.shape[0]
-    bag_df[0:1]['rating 2'] = total
+    bag_df[:1]['rating 2'] = total
     bag_df[1:2]['rating 2'] = total_pos
     return
 
@@ -90,14 +88,14 @@ class BagGenerator:
       y2[s_id, 1] = 0
       y2[s_id + 1, 0] = y[s_id + 1, 0] / y[s_id, 0]
       y2[s_id + 1, 1] = 1 - y2[s_id + 1, 0]
-      s_id = s_id + int(y[s_id])
+      s_id += int(y[s_id])
     return y2
 
   def process_dllp(self, y):
     s_id = 0
     while s_id < y.shape[0]:
       y[s_id+1] = y[s_id+1]/ y[s_id]
-      s_id = s_id + int(y[s_id])
+      s_id += int(y[s_id])
     return y
 
   def __next__(self):
@@ -108,15 +106,13 @@ class BagGenerator:
       while True:
         name_cnt = random.randint(0, len(self.name_lst) - 1)
         bag_df = self.data.loc[self.data.bag_id == self.name_lst[name_cnt]]
+        self.update_label(bag_df)
         if start_df:
-          self.update_label(bag_df)
           my_df = bag_df
-          bag_cnt += 1
           start_df = False
         else:
-          self.update_label(bag_df)
           my_df = pd.concat([my_df, bag_df], axis=0)
-          bag_cnt += 1
+        bag_cnt += 1
         if bag_cnt >= self.nb_bags:
           break
       x_batch = [my_df[f].values for f in self.sparse_feats]
